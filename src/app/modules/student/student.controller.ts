@@ -3,9 +3,9 @@ import { StudentService } from './student.service';
 
 const createStudent = async (req: Request, res: Response) => {
   try {
-    const student = req.body;
+    const { student: studentData } = req.body;
     //will call service function to send this data
-    const result = await StudentService.createStudentIntoDB(student);
+    const result = await StudentService.createStudentIntoDB(studentData);
     //send response
     res.status(200).json({
       success: true,
@@ -16,7 +16,7 @@ const createStudent = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: 'Something went wrong',
-      error: error,
+      error: error instanceof Error ? error : 'Unknown error occurred',
     });
   }
 };
