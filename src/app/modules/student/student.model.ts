@@ -7,9 +7,31 @@ import {
 } from './student.interface';
 
 const userNameSchema = new Schema<UserName>({
-  firstName: { type: String, required: true },
-  middleName: { type: String },
-  lastName: { type: String, required: true },
+  firstName: {
+    type: String,
+    trim: true,
+    required: true,
+    maxlength: [20, 'First name cannot be more than 20 characters'],
+    validate: function (value: string) {
+      const firstName = value.charAt(0).toUpperCase() + value.slice(1);
+      return firstName === value;
+    },
+    message: 'First name must start with a capital letter',
+  },
+  middleName: { type: String, trim: true },
+  lastName: {
+    type: String,
+    trim: true,
+    required: true,
+    maxlength: [20, 'Last name cannot be more than 20 characters'],
+    validate: {
+      validator: function (value: string) {
+        const lastName = value.charAt(0).toUpperCase() + value.slice(1);
+        return lastName === value;
+      },
+      message: 'Last name must start with a capital letter',
+    },
+  },
 });
 
 const guardianSchema = new Schema<Guardian>({
