@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StudentService } from './student.service';
+import { StudentValidation } from './student.validation';
 
 const getSinglStudent = async (req: Request, res: Response) => {
   try {
@@ -38,9 +39,11 @@ const getAllStudents = async (req: Request, res: Response) => {
 
 const createStudent = async (req: Request, res: Response) => {
   try {
-    const { student: studentData } = req.body;
-    //will call service function to send this data
-    const result = await StudentService.createStudentIntoDB(studentData);
+    const zodParsedData = StudentValidation.studentValidationSchema.parse(
+      req.body,
+    );
+    // Extract the student data from the nested structure
+    const result = await StudentService.createStudentIntoDB(zodParsedData.student);
     //send response
     res.status(200).json({
       success: true,
@@ -50,8 +53,8 @@ const createStudent = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Something went wrong',
-      error: error instanceof Error ? error : 'Unknown error occurred',
+      message: error instanceof Error ? error.message : 'Something went wrong',
+      error: error 
     });
   }
 };

@@ -1,12 +1,15 @@
 import { Schema, model } from 'mongoose';
+import validator from 'validator';
 import {
-  Guardian,
-  LocalGuardian,
-  Student,
-  UserName,
+  StudentMethod,
+  StudentModel,
+  TGuardian,
+  TLocalGuardian,
+  TStudent,
+  TUserName,
 } from './student.interface';
 
-const userNameSchema = new Schema<UserName>({
+const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
     trim: true,
@@ -25,16 +28,13 @@ const userNameSchema = new Schema<UserName>({
     required: true,
     maxlength: [20, 'Last name cannot be more than 20 characters'],
     validate: {
-      validator: function (value: string) {
-        const lastName = value.charAt(0).toUpperCase() + value.slice(1);
-        return lastName === value;
-      },
-      message: 'Last name must start with a capital letter',
+      validator: (value: string) => validator.isAlphanumeric(value),
+      message: 'Last name must be alphanumeric',
     },
   },
 });
 
-const guardianSchema = new Schema<Guardian>({
+const guardianSchema = new Schema<TGuardian>({
   fatherName: { type: String, required: true },
   fatherOccupation: { type: String, required: true },
   fatherContactNo: { type: String, required: true },
@@ -43,14 +43,14 @@ const guardianSchema = new Schema<Guardian>({
   motherContactNo: { type: String, required: true },
 });
 
-const localGuardianSchema = new Schema<LocalGuardian>({
+const localGuardianSchema = new Schema<TLocalGuardian>({
   name: { type: String, required: true },
   occupation: { type: String, required: true },
   contactNo: { type: String, required: true },
   address: { type: String, required: true },
 });
 
-const studentSchema = new Schema<Student>({
+const studentSchema = new Schema<TStudent, StudentModel, StudentMethod>({
   id: { type: String, unique: true, required: true },
   name: { type: userNameSchema, required: true },
   gender: {
@@ -62,7 +62,15 @@ const studentSchema = new Schema<Student>({
     required: true,
   },
   dateOfBirth: { type: String },
-  email: { type: String, unique: true, required: true },
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+    validate: {
+      validator: (value: string) => validator.isEmail(value),
+      message: '{VALUE} is not a valid email address',
+    },
+  },
   contactNumber: { type: String, required: true },
   emergencyContactNumber: { type: String, required: true },
   bloodGroup: {
@@ -87,5 +95,10 @@ const studentSchema = new Schema<Student>({
   },
 });
 
-const StudentModel = model<Student>('Student', studentSchema);
-export default StudentModel;
+studentSchema.methods.isUserExists = async function (id: string) {
+  const existingUser = await Student.findOne({ id });
+  return existingUser;
+};
+
+const Student = model<TStudent, StudentModel>('Student', studentSchema);
+export default Student;
