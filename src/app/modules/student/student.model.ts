@@ -1,5 +1,7 @@
+import bcrypt from 'bcrypt';
 import { Schema, model } from 'mongoose';
 import validator from 'validator';
+import config from '../../config';
 import {
   StudentModel,
   TGuardian,
@@ -7,7 +9,6 @@ import {
   TStudent,
   TUserName,
 } from './student.interface';
-
 const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
@@ -51,6 +52,11 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
 
 const studentSchema = new Schema<TStudent, StudentModel>({
   id: { type: String, unique: true, required: true },
+  password: {
+    type: String,
+    unique: true,
+    required: [true, 'Password is required'],
+  },
   name: { type: userNameSchema, required: true },
   gender: {
     type: String,
@@ -105,5 +111,20 @@ studentSchema.statics.isUserExists = async function (id: string) {
   return existingUser;
 };
 
+// Move middleware before model creation
+studentSchema.pre('save', async function (next) {
+  // console.log(this, "pre hook : we will save the data");
+  //  hash the password
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  const user = this;
+  user.password = bcrypt.hashSync(user.password, Number(config.bcrypt_salt_rounds));
+  next();
+});
+
+studentSchema.post('save', function () {
+  console.log(this, 'post hook : we saved the data');
+});
+
+// Create and export model after middleware is defined
 const Student = model<TStudent, StudentModel>('Student', studentSchema);
 export default Student;
