@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
 import validator from 'validator';
 import {
-  StudentMethod,
   StudentModel,
   TGuardian,
   TLocalGuardian,
@@ -50,7 +49,7 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
   address: { type: String, required: true },
 });
 
-const studentSchema = new Schema<TStudent, StudentModel, StudentMethod>({
+const studentSchema = new Schema<TStudent, StudentModel>({
   id: { type: String, unique: true, required: true },
   name: { type: userNameSchema, required: true },
   gender: {
@@ -94,8 +93,14 @@ const studentSchema = new Schema<TStudent, StudentModel, StudentMethod>({
     default: 'active',
   },
 });
+// creating a custom instance method
+// studentSchema.methods.isUserExists = async function (id: string) {
+//   const existingUser = await Student.findOne({ id });
+//   return existingUser;
+// };
 
-studentSchema.methods.isUserExists = async function (id: string) {
+// creating a custom static method
+studentSchema.statics.isUserExists = async function (id: string) {
   const existingUser = await Student.findOne({ id });
   return existingUser;
 };

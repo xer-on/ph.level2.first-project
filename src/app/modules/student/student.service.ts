@@ -10,16 +10,23 @@ const getSingleStudentFromDB = async (id: string) => {
   return result;
 };
 const createStudentIntoDB = async (studentData: TStudent) => {
-  // const result = await StudentModel.create(student);
-  // built in static method
-  const student = new Student(studentData);
-
-  if (await student.isUserExists(studentData.id)) {
+  // custom static method
+  if (await Student.isUserExists(studentData.id)) {
     throw new Error('User already exists');
   }
+  const result = await Student.create(studentData);
+  // built in static method
+  // const student = new Student(studentData);
 
-  const result = await student.save();
+  // if (await student.isUserExists(studentData.id)) {
+  //   throw new Error('User already exists');
+  // }
+
+  // const result = await student.save();
   // built in instance method
+
+
+ 
   return result;
 };
 
