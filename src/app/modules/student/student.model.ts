@@ -50,55 +50,71 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
   address: { type: String, required: true },
 });
 
-const studentSchema = new Schema<TStudent, StudentModel>({
-  id: { type: String, unique: true, required: true },
-  password: {
-    type: String,
-    unique: true,
-    required: [true, 'Password is required'],
-  },
-  name: { type: userNameSchema, required: true },
-  gender: {
-    type: String,
-    enum: {
-      values: ['male', 'female'],
-      message: '{VALUE} is not a valid gender',
+const studentSchema = new Schema<TStudent, StudentModel>(
+  {
+    id: { type: String, unique: true, required: true },
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
     },
-    required: true,
-  },
-  dateOfBirth: { type: String },
-  email: {
-    type: String,
-    unique: true,
-    required: true,
-    validate: {
-      validator: (value: string) => validator.isEmail(value),
-      message: '{VALUE} is not a valid email address',
+    name: { type: userNameSchema, required: true },
+    gender: {
+      type: String,
+      enum: {
+        values: ['male', 'female'],
+        message: '{VALUE} is not a valid gender',
+      },
+      required: true,
+    },
+    dateOfBirth: { type: String },
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+      validate: {
+        validator: (value: string) => validator.isEmail(value),
+        message: '{VALUE} is not a valid email address',
+      },
+    },
+    contactNumber: { type: String, required: true },
+    emergencyContactNumber: { type: String, required: true },
+    bloodGroup: {
+      type: String,
+      enum: {
+        values: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+        message: '{VALUE} is not a valid blood group',
+      },
+    },
+    presentAddress: { type: String, required: true },
+    permanentAddress: { type: String, required: true },
+    guardian: { type: guardianSchema, required: true },
+    localGuardian: { type: localGuardianSchema, required: true },
+    profileImage: { type: String },
+    isActive: {
+      type: String,
+      enum: {
+        values: ['active', 'blocked'],
+        message: '{VALUE} is not a valid status',
+      },
+      default: 'active',
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
-  contactNumber: { type: String, required: true },
-  emergencyContactNumber: { type: String, required: true },
-  bloodGroup: {
-    type: String,
-    enum: {
-      values: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
-      message: '{VALUE} is not a valid blood group',
+  {
+    toJSON: {
+      virtuals: true,
     },
   },
-  presentAddress: { type: String, required: true },
-  permanentAddress: { type: String, required: true },
-  guardian: { type: guardianSchema, required: true },
-  localGuardian: { type: localGuardianSchema, required: true },
-  profileImage: { type: String },
-  isActive: {
-    type: String,
-    enum: {
-      values: ['active', 'blocked'],
-      message: '{VALUE} is not a valid status',
-    },
-    default: 'active',
-  },
+);
+
+// virtual
+studentSchema.virtual('fullName').get(function name() {
+  return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`;
 });
+
 // creating a custom instance method
 // studentSchema.methods.isUserExists = async function (id: string) {
 //   const existingUser = await Student.findOne({ id });
@@ -117,12 +133,35 @@ studentSchema.pre('save', async function (next) {
   //  hash the password
   // eslint-disable-next-line @typescript-eslint/no-this-alias
   const user = this;
-  user.password = bcrypt.hashSync(user.password, Number(config.bcrypt_salt_rounds));
+  user.password = bcrypt.hashSync(
+    user.password,
+    Number(config.bcrypt_salt_rounds),
+  );
   next();
 });
 
-studentSchema.post('save', function () {
-  console.log(this, 'post hook : we saved the data');
+studentSchema.post('save', function (doc, next) {
+  doc.password = '';
+  next();
+});
+
+// query middleware
+studentSchema.pre('find', function (next) {
+  //  console.log(this)
+  this.find({ isDeleted: { $ne: true } });
+  next();
+});
+studentSchema.pre('findOne', function (next) {
+  //  console.log(this)
+  this.find({ isDeleted: { $ne: true } });
+  next();
+});
+
+// [{$match: {isDeleted:{$ne:true}}}]
+studentSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
+
+  next();
 });
 
 // Create and export model after middleware is defined
