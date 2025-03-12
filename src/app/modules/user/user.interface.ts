@@ -8,3 +8,4 @@ export type TUser = {
   createdAt: Date;
   updatedAt: Date;
 };
+
