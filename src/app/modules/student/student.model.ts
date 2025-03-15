@@ -1,4 +1,3 @@
-import bcrypt from 'bcryptjs';
 import { Schema, model } from 'mongoose';
 import validator from 'validator';
 import {
@@ -8,7 +7,6 @@ import {
   TStudent,
   TUserName,
 } from './student.interface';
-import { config } from '../../config';
 const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
@@ -57,10 +55,6 @@ const studentSchema = new Schema<TStudent, StudentModel>({
     ref: 'User',
     required: true,
     unique: true,
-  },
-  password: {
-    type: String,
-    required: [true, 'Password is required'],
   },
   name: { type: userNameSchema, required: true },
   gender: {
@@ -119,22 +113,6 @@ studentSchema.statics.isUserExists = async function (id: string) {
 };
 
 // Move middleware before model creation
-studentSchema.pre('save', async function (next) {
-  // console.log(this, "pre hook : we will save the data");
-  //  hash the password
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const user = this;
-  user.password = bcrypt.hashSync(
-    user.password,
-    Number(config.bcrypt_salt_rounds),
-  );
-  next();
-});
-
-studentSchema.post('save', function (doc, next) {
-  doc.password = '';
-  next();
-});
 
 // query middleware
 studentSchema.pre('find', function (next) {
