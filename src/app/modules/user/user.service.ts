@@ -14,7 +14,16 @@ const createStudentIntoDB = async (password: string, studentData: TStudent) => {
   userData.role = 'student';
 
   // mannualy generated id
-  userData.id = '1234567890';
+  userData.id = studentData.id;
+
+  const existingUser = await User.findOne({ id: userData.id });
+  if (existingUser) {
+    throw new Error('User ID already exists');
+  }
+  const existingEmail = await Student.findOne({ email: studentData.email });
+  if (existingEmail) {
+    throw new Error('Email already exists');
+  }
 
   //create a user
   const newUser = await User.create(userData);

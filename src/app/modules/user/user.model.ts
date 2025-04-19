@@ -6,12 +6,12 @@ const userschema = new Schema<TUser>(
   {
     id: {
       type: String,
-      required: true,
-      unique: true,
+      required: [true, 'User ID is required'],
+      unique: [true, 'User ID must be unique'],
     },
     password: {
       type: String,
-      required: true,
+      required: [true, 'Password is required'],
     },
     needsPasswordChange: {
       type: Boolean,

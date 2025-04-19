@@ -11,7 +11,7 @@ const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
     trim: true,
-    required: true,
+    required: [true, 'First name is required'],
     maxlength: [20, 'First name cannot be more than 20 characters'],
     validate: function (value: string) {
       const firstName = value.charAt(0).toUpperCase() + value.slice(1);
@@ -23,14 +23,14 @@ const userNameSchema = new Schema<TUserName>({
   lastName: {
     type: String,
     trim: true,
-    required: true,
+    required: [true, 'Last name is required'],
     maxlength: [20, 'Last name cannot be more than 20 characters'],
     validate: {
       validator: (value: string) => validator.isAlphanumeric(value),
       message: 'Last name must be alphanumeric',
     },
   },
-});
+}, { _id: false });
 
 const guardianSchema = new Schema<TGuardian>({
   fatherName: { type: String, required: true },
@@ -39,22 +39,22 @@ const guardianSchema = new Schema<TGuardian>({
   motherName: { type: String, required: true },
   motherOccupation: { type: String, required: true },
   motherContactNo: { type: String, required: true },
-});
+}, { _id: false });
 
 const localGuardianSchema = new Schema<TLocalGuardian>({
   name: { type: String, required: true },
   occupation: { type: String, required: true },
   contactNo: { type: String, required: true },
   address: { type: String, required: true },
-});
+}, { _id: false });
 
 const studentSchema = new Schema<TStudent, StudentModel>({
   id: { type: String, unique: true, required: true },
   user: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    unique: true,
+    required: [true, 'User is required'],
+    unique: [true, 'User must be unique'],
   },
   name: { type: userNameSchema, required: true },
   gender: {
@@ -63,20 +63,20 @@ const studentSchema = new Schema<TStudent, StudentModel>({
       values: ['male', 'female'],
       message: '{VALUE} is not a valid gender',
     },
-    required: true,
+    required: [true, 'Gender is required'],
   },
   dateOfBirth: { type: String },
   email: {
     type: String,
-    unique: true,
-    required: true,
+    unique: [true, 'Email must be unique'],
+    required: [true, 'Email is required'],
     validate: {
       validator: (value: string) => validator.isEmail(value),
       message: '{VALUE} is not a valid email address',
     },
   },
-  contactNumber: { type: String, required: true },
-  emergencyContactNumber: { type: String, required: true },
+  contactNumber: { type: String, required: [true, 'Contact number is required'] },
+  emergencyContactNumber: { type: String, required: [true, 'Emergency contact number is required']   },
   bloodGroup: {
     type: String,
     enum: {

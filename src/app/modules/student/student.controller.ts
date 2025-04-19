@@ -1,56 +1,36 @@
 import { Request, Response } from 'express';
 import { StudentService } from './student.service';
+import responseSender from '../../utils/sendResponse';
 
 const getSingleStudent = async (req: Request, res: Response) => {
+  const { successResponse, errorResponse } = responseSender(res);
   try {
     const { studentId } = req.params;
     const result = await StudentService.getSingleStudentFromDB(studentId);
-    res.status(200).json({
-      success: true,
-      message: 'Student is fetched successfully',
-      data: result,
-    });
+    successResponse('Student is fetched successfully', result);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Something went wrong',
-      error: error instanceof Error ? error : 'Unknown error occurred',
-    });
+    errorResponse(error);
   }
 };
 
 const getAllStudents = async (req: Request, res: Response) => {
+  const { successResponse, errorResponse } = responseSender(res);
   try {
     const result = await StudentService.getAllStudentsFromDB();
-    res.status(200).json({
-      success: true,
-      message: 'Students are fetched successfully',
-      data: result,
-    });
+    successResponse('Students are fetched successfully', result);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Something went wrong',
-      error: error instanceof Error ? error : 'Unknown error occurred',
-    });
+    errorResponse(error);
   }
 };
 
 const deleteStudent = async (req: Request, res: Response) => {
+  const { successResponse, errorResponse } = responseSender(res);
   try {
     const { studentId } = req.params;
     const result = await StudentService.deleteStudentsFromDB(studentId);
-    res.status(200).json({
-      success: true,
-      message: 'Student deleted successfully',
-      data: result,
-    });
+    successResponse('Student deleted successfully', result);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Something went wrong',
-      error: error instanceof Error ? error : 'Unknown error occurred',
-    });
+    errorResponse(error);
   }
 };
 
