@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { Application, Request, Response } from 'express';
 import { StudentRoutes } from './app/modules/student/student.route';
 import { UserRoutes } from './app/modules/user/user.route';
+import notFound from './app/middleware/notFound';
 const app: Application = express();
 // const port = 3000;
 
@@ -16,5 +17,9 @@ app.use('/api/v1/users', UserRoutes);
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World');
 });
+
+
+//not found route
+app.use(notFound)
 
 export default app;
