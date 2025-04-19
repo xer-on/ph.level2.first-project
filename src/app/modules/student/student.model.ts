@@ -95,24 +95,14 @@ const studentSchema = new Schema<TStudent, StudentModel>({
   },
 });
 
-// virtual
 studentSchema.virtual('fullName').get(function name() {
   return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`;
 });
 
-// creating a custom instance method
-// studentSchema.methods.isUserExists = async function (id: string) {
-//   const existingUser = await Student.findOne({ id });
-//   return existingUser;
-// };
-
-// creating a custom static method
 studentSchema.statics.isUserExists = async function (id: string) {
   const existingUser = await Student.findOne({ id });
   return existingUser;
 };
-
-// Move middleware before model creation
 
 // query middleware
 studentSchema.pre('find', function (next) {
